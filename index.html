@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Daily Shop Floor Performance Dashboard</title>
+
+  <!-- SheetJS Library for Excel Upload -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+  <style>
+    :root {
+      --bg-color: #f4f6f9;
+      --card-bg: #ffffff;
+      --text-main: #333333;
+      --primary: #1e3a8a;
+      --success-bg: #d1fae5;
+      --success-text: #065f46;
+      --border-color: #e5e7eb;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      margin: 0;
+      padding: 20px;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background-color: var(--primary);
+      color: white;
+      padding: 15px 25px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+
+    .header h1 {
+      margin: 0;
+      font-size: 22px;
+    }
+
+    .upload-btn-wrapper {
+      position: relative;
+      overflow: hidden;
+      display: inline-block;
+    }
+
+    .btn-upload {
+      border: 1px solid white;
+      color: var(--primary);
+      background-color: white;
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .upload-btn-wrapper input[type=file] {
+      font-size: 100px;
+      position: absolute;
+      left: 0;
+      top: 0;
+      opacity: 0;
+      cursor: pointer;
+    }
+
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 20px;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+      border: 1px solid var(--border-color);
+    }
+
+    .card h2 {
+      margin-top: 0;
+      font-size: 18px;
+      color: var(--primary);
+      border-bottom: 2px solid var(--border-color);
+      padding-bottom: 8px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      font-size: 14px;
+    }
+
+    th, td {
+      border: 1px solid var(--border-color);
+      padding: 8px 12px;
+      text-align: left;
+    }
+
+    th {
+      background-color: #f8fafc;
+      font-weight: 600;
+    }
+
+    .completed {
+      background-color: var(--success-bg) !important;
+      color: var(--success-text) !important;
+      font-weight: bold;
+    }
+
+    .text-center { text-align: center; }
+    .text-right { text-align: right; }
+
+    @media (max-width: 900px) {
+      .dashboard-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+      }
+
+      .upload-btn-wrapper {
+        align-self: stretch;
+      }
+
+      .btn-upload {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <div>
+      <h1>Daily Shop Floor Performance Dashboard</h1>
+      <small id="dashboard-date">Date: 16/08/26</small>
+    </div>
+
+    <div class="upload-btn-wrapper">
+      <button class="btn-upload">Upload Excel File</button>
+      <input type="file" id="excel-file" accept=".xlsx, .xls" />
+    </div>
+  </div>
+
+  <div class="dashboard-grid">
+
+    <!-- LEFT COLUMN: TODAY'S ACTUAL PERFORMANCE -->
+    <div class="card">
+      <h2>Today's Performance Overview (Actual vs Plan)</h2>
+
+      <table id="today-table">
+        <thead>
+          <tr>
+            <th>Department / Line</th>
+            <th class="text-center">Plan</th>
+            <th class="text-center">Actual</th>
+            <th class="text-center">Variance</th>
+            <th class="text-center">Defect %</th>
+            <th>Drop / Item Breakdown</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr>
+            <td>BREG Assembly</td>
+            <td class="text-center">2288</td>
+            <td class="text-center">1476</td>
+            <td class="text-center">-812</td>
+            <td class="text-center">—</td>
+            <td>DLX: 1476 (Var: -812)</td>
+          </tr>
+
+          <tr>
+            <td>BREG-SEW</td>
+            <td class="text-center">5913</td>
+            <td class="text-center">5793</td>
+            <td class="text-center">-120</td>
+            <td class="text-center">7.96%</td>
+            <td>DLX: 3053/3600 | 552: 90/900</td>
+          </tr>
+
+          <tr>
+            <td>UO-Assem</td>
+            <td class="text-center">3612</td>
+            <td class="text-center">3340</td>
+            <td class="text-center">-272</td>
+            <td class="text-center">6.44%</td>
+            <td>Item completion tracking</td>
+          </tr>
+
+          <tr>
+            <td>HW Assembly</td>
+            <td class="text-center">3417</td>
+            <td class="text-center">3364</td>
+            <td class="text-center">-53</td>
+            <td class="text-center">2.67%</td>
+            <td>—</td>
+          </tr>
+
+          <tr>
+            <td>VOHW SEW</td>
+            <td class="text-center">4520</td>
+            <td class="text-center">4004</td>
+            <td class="text-center">-516</td>
+            <td class="text-center">3.65%</td>
+            <td>Ankle: 252 | Shoulder: 88</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- RIGHT COLUMN: TOMORROW'S PLAN -->
+    <div class="card">
+      <h2>Tomorrow's Plan</h2>
+
+      <table id="tomorrow-table">
+        <thead>
+          <tr>
+            <th>Department</th>
+            <th class="text-center">Target Plan</th>
+            <th>Family / Item Breakdown</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr>
+            <td>BREG Assembly</td>
+            <td class="text-center">5088</td>
+            <td>DLX: 4200, 552: 888</td>
+          </tr>
+
+          <tr>
+            <td>BREG-SEW</td>
+            <td class="text-center">4464</td>
+            <td>DLX: 3600, 552: 900, BOT: 1940</td>
+          </tr>
+
+          <tr>
+            <td>UO & HW / Trim</td>
+            <td class="text-center">2879</td>
+            <td>Trim: 1610, SS: 518, BS: 158, PK: 500, SPOKI: 400</td>
+          </tr>
+
+          <tr>
+            <td>Trim / Sub-Items</td>
+            <td class="text-center">4300</td>
+            <td>Trim: 1200, An: 400, SS: 500, WB: 700</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+
+  <script>
+    // Apply green highlight when Variance >= 0
+    function applyConditionalFormatting() {
+      const rows = document.querySelectorAll('#today-table tbody tr');
+
+      rows.forEach(row => {
+        const varianceCell = row.cells[3];
+
+        if (varianceCell) {
+          const varianceValue = parseFloat(varianceCell.textContent);
+
+          if (!isNaN(varianceValue) && varianceValue >= 0) {
+            row.classList.add('completed');
+          } else {
+            row.classList.remove('completed');
+          }
+        }
+      });
+    }
+
+    applyConditionalFormatting();
+
+    // Excel upload and parsing
+    document.getElementById('excel-file').addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+
+      reader.onload = function(evt) {
+        const data = new Uint8Array(evt.target.result);
+        const workbook = XLSX.read(data, { type: 'array' });
+
+        // Sheet 1: Today's Performance
+        const sheet1Name = workbook.SheetNames[0];
+        const sheet1 = XLSX.utils.sheet_to_json(workbook.Sheets[sheet1Name]);
+        populateTodayTable(sheet1);
+
+        // Sheet 2: Tomorrow's Plan
+        if (workbook.SheetNames.length > 1) {
+          const sheet2Name = workbook.SheetNames[1];
+          const sheet2 = XLSX.utils.sheet_to_json(workbook.Sheets[sheet2Name]);
+          populateTomorrowTable(sheet2);
+        }
+
+        applyConditionalFormatting();
+      };
+
+      reader.readAsArrayBuffer(file);
+    });
+
+    function populateTodayTable(data) {
+      const tbody = document.querySelector('#today-table tbody');
+      tbody.innerHTML = '';
+
+      data.forEach(row => {
+        const tr = document.createElement('tr');
+
+        tr.innerHTML = `
+          <td>${row['Department'] || ''}</td>
+          <td class="text-center">${row['Plan'] ?? 0}</td>
+          <td class="text-center">${row['Actual'] ?? 0}</td>
+          <td class="text-center">${row['Variance'] ?? 0}</td>
+          <td class="text-center">${row['Defect %'] || '—'}</td>
+          <td>${row['Breakdown'] || ''}</td>
+        `;
+
+        tbody.appendChild(tr);
+      });
+    }
+
+    function populateTomorrowTable(data) {
+      const tbody = document.querySelector('#tomorrow-table tbody');
+      tbody.innerHTML = '';
+
+      data.forEach(row => {
+        const tr = document.createElement('tr');
+
+        tr.innerHTML = `
+          <td>${row['Department'] || ''}</td>
+          <td class="text-center">${row['Target Plan'] ?? 0}</td>
+          <td>${row['Breakdown'] || ''}</td>
+        `;
+
+        tbody.appendChild(tr);
+      });
+    }
+  </script>
+
+</body>
+</html>
