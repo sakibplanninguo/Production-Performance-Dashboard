@@ -1,355 +1,392 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Daily Shop Floor Performance Dashboard</title>
-
-  <!-- SheetJS Library for Excel Upload -->
-  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-
-  <style>
-    :root {
-      --bg-color: #f4f6f9;
-      --card-bg: #ffffff;
-      --text-main: #333333;
-      --primary: #1e3a8a;
-      --success-bg: #d1fae5;
-      --success-text: #065f46;
-      --border-color: #e5e7eb;
-    }
-
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background-color: var(--bg-color);
-      color: var(--text-main);
-      margin: 0;
-      padding: 20px;
-    }
-
-    .header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background-color: var(--primary);
-      color: white;
-      padding: 15px 25px;
-      border-radius: 8px;
-      margin-bottom: 20px;
-    }
-
-    .header h1 {
-      margin: 0;
-      font-size: 22px;
-    }
-
-    .upload-btn-wrapper {
-      position: relative;
-      overflow: hidden;
-      display: inline-block;
-    }
-
-    .btn-upload {
-      border: 1px solid white;
-      color: var(--primary);
-      background-color: white;
-      padding: 8px 16px;
-      border-radius: 6px;
-      font-weight: bold;
-      cursor: pointer;
-    }
-
-    .upload-btn-wrapper input[type=file] {
-      font-size: 100px;
-      position: absolute;
-      left: 0;
-      top: 0;
-      opacity: 0;
-      cursor: pointer;
-    }
-
-    .dashboard-grid {
-      display: grid;
-      grid-template-columns: 2fr 1fr;
-      gap: 20px;
-    }
-
-    .card {
-      background: var(--card-bg);
-      border-radius: 8px;
-      padding: 20px;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-      border: 1px solid var(--border-color);
-    }
-
-    .card h2 {
-      margin-top: 0;
-      font-size: 18px;
-      color: var(--primary);
-      border-bottom: 2px solid var(--border-color);
-      padding-bottom: 8px;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 10px;
-      font-size: 14px;
-    }
-
-    th, td {
-      border: 1px solid var(--border-color);
-      padding: 8px 12px;
-      text-align: left;
-    }
-
-    th {
-      background-color: #f8fafc;
-      font-weight: 600;
-    }
-
-    .completed {
-      background-color: var(--success-bg) !important;
-      color: var(--success-text) !important;
-      font-weight: bold;
-    }
-
-    .text-center { text-align: center; }
-    .text-right { text-align: right; }
-
-    @media (max-width: 900px) {
-      .dashboard-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 12px;
-      }
-
-      .upload-btn-wrapper {
-        align-self: stretch;
-      }
-
-      .btn-upload {
-        width: 100%;
-      }
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Global Manufacturing Operations Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+:root{
+  --navy:#1e3a8a;
+  --navy2:#1e3a8a;
+  --bluegray:#64748b;
+  --line:#e5e7eb;
+  --paper:#ffffff;
+  --bg:#f4f6f9;
+  --green:#d1fae5;
+  --green2:#ecfdf5;
+  --red:#fee2e2;
+  --text:#333333;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  padding:24px;
+  background:var(--bg);
+  color:var(--text);
+  font-family:"Arial Narrow","Roboto Condensed","Segoe UI",Arial,sans-serif;
+}
+.dashboard{
+  max-width:1500px;
+  margin:auto;
+  background:var(--paper);
+  border:1px solid var(--line);
+  box-shadow:0 4px 6px rgba(0,0,0,.05);
+  padding:18px 20px 20px;
+}
+.topbar{
+  display:grid;
+  grid-template-columns:180px 1fr 210px;
+  align-items:center;
+  gap:15px;
+  border-bottom:2px solid var(--line);
+  padding:4px 0 12px;
+}
+.date{font-size:27px;font-weight:800;letter-spacing:.5px}
+.title{text-align:center;font-size:21px;font-weight:900;letter-spacing:.3px}
+.upload{justify-self:end}
+.upload button{
+  background:var(--navy);color:white;border:0;padding:10px 16px;
+  font-weight:700;cursor:pointer;border-radius:3px;font-size:13px
+}
+.upload button:hover{background:#172554}
+.section-title{
+  background:var(--navy);
+  color:#fff;
+  font-weight:800;
+  padding:7px 10px;
+  margin:12px 0 8px;
+  font-size:15px;
+  letter-spacing:.2px;
+}
+.main{
+  display:grid;
+  grid-template-columns:minmax(0,3.2fr) minmax(310px,1.1fr);
+  gap:10px;
+}
+.left{min-width:0}
+.right{
+  border-left:1px solid var(--line);
+  padding-left:10px;
+}
+.overview{
+  display:grid;
+  grid-template-columns:repeat(3,1fr) 1.45fr;
+  gap:8px;
+}
+.kpi{
+  border:1px solid var(--line);
+  min-height:100px;
+  padding:14px 10px;
+  text-align:center;
+  background:#f8fafc;
+}
+.kpi.green{background:var(--green)}
+.kpi.red{background:var(--red)}
+.kpi .label{font-size:15px;font-weight:800;letter-spacing:.6px}
+.kpi .value{font-size:29px;font-weight:900;margin-top:8px}
+.drop-card{
+  border:1px solid var(--line);
+  padding:7px 9px;
+  background:#ffffff;
+  min-height:100px;
+}
+.drop-card h4{margin:0 0 4px;font-size:12px;text-align:center}
+.mini-table{width:100%;border-collapse:collapse;font-size:11px}
+.mini-table th,.mini-table td{border:1px solid var(--line);padding:3px 5px;text-align:center}
+.chart-row{
+  display:grid;
+  grid-template-columns:1fr;
+  margin-top:8px;
+  border:1px solid var(--line);
+  padding:7px 10px 4px;
+  background:#fbfbfb;
+}
+.chart-label{font-size:14px;font-weight:900;margin-bottom:2px}
+.chart-box{height:170px}
+.table-title{
+  background:var(--navy);
+  color:#fff;
+  font-weight:800;
+  padding:6px 8px;
+  margin-top:8px;
+  font-size:14px;
+}
+table.data{width:100%;border-collapse:collapse;font-size:13px}
+table.data th{
+  background:var(--navy);color:#fff;padding:6px 5px;border:1px solid var(--line);
+  font-weight:800;text-align:center
+}
+table.data td{border:1px solid var(--line);padding:5px 6px}
+.center{text-align:center}.righttxt{text-align:right}
+.plan-block{border:1px solid var(--line);margin-bottom:7px}
+.plan-head{
+  display:grid;grid-template-columns:1fr 70px;
+  background:#f8fafc;padding:6px 8px;font-weight:900
+}
+.plan-body{padding:7px 10px;font-size:13px;line-height:1.55}
+.plan-body.green{background:var(--green)}
+.total-row{display:flex;justify-content:space-between;font-weight:900;border-top:1px solid var(--line);padding:5px 8px}
+.defect-box{
+  background:var(--green2);
+  border:1px solid var(--line);
+  padding:8px 10px;
+  margin-top:8px;
+}
+.defect-line{display:flex;justify-content:space-between;font-weight:900;padding:4px 0}
+.donut-wrap{
+  margin-top:8px;border:1px solid var(--line);height:220px;padding:10px;background:#fafafa
+}
+.status{font-size:12px;color:#64748b;margin-top:5px;text-align:right}
+.neg{background:var(--red)}
+.pos{background:var(--green)}
+@media(max-width:950px){
+ body{padding:8px}.dashboard{padding:12px}
+ .topbar{grid-template-columns:1fr;gap:8px}.title{text-align:left}.upload{justify-self:start}
+ .main{grid-template-columns:1fr}.right{border-left:0;padding-left:0}
+ .overview{grid-template-columns:1fr 1fr}.drop-card{grid-column:1/-1}
+}
+</style>
 </head>
 <body>
-
-  <div class="header">
-    <div>
-      <h1>Daily Shop Floor Performance Dashboard</h1>
-      <small id="dashboard-date">Date: 16/08/26</small>
-    </div>
-
-    <div class="upload-btn-wrapper">
-      <button class="btn-upload">Upload Excel File</button>
-      <input type="file" id="excel-file" accept=".xlsx, .xls" />
+<div class="dashboard">
+  <div class="topbar">
+    <div class="date" id="dashDate">16/08/26</div>
+    <div class="title">GLOBAL MANUFACTURING OPERATIONS DASHBOARD - ONE-PAGE VIEW</div>
+    <div class="upload">
+      <input type="file" id="excel-file" accept=".xlsx,.xls" hidden>
+      <button onclick="document.getElementById('excel-file').click()">UPLOAD EXCEL</button>
     </div>
   </div>
 
-  <div class="dashboard-grid">
+  <div class="section-title">TODAY'S PRODUCTION PERFORMANCE (DAY BY DAY)</div>
 
-    <!-- LEFT COLUMN: TODAY'S ACTUAL PERFORMANCE -->
-    <div class="card">
-      <h2>Today's Performance Overview (Actual vs Plan)</h2>
+  <div class="main">
+    <div class="left">
+      <div class="overview">
+        <div class="kpi" id="planCard">
+          <div class="label">PLAN</div><div class="value" id="totalPlan">0</div>
+        </div>
+        <div class="kpi green">
+          <div class="label">ACTUAL</div><div class="value" id="totalActual">0</div>
+        </div>
+        <div class="kpi red">
+          <div class="label">VARIANCE</div><div class="value" id="totalVariance">0</div>
+        </div>
+        <div class="drop-card">
+          <h4>PRODUCT DROP RECORD</h4>
+          <table class="mini-table">
+            <thead><tr><th>Line</th><th>Plan</th><th>Reason</th></tr></thead>
+            <tbody id="dropBody"></tbody>
+          </table>
+        </div>
+      </div>
 
-      <table id="today-table">
+      <div class="chart-row">
+        <div class="chart-label">VARIANCE BY PERFORMANCE</div>
+        <div class="chart-box"><canvas id="varianceChart"></canvas></div>
+      </div>
+
+      <div class="table-title">ITEM & FAMILY-WISE PERFORMANCE</div>
+      <table class="data">
         <thead>
           <tr>
-            <th>Department / Line</th>
-            <th class="text-center">Plan</th>
-            <th class="text-center">Actual</th>
-            <th class="text-center">Variance</th>
-            <th class="text-center">Defect %</th>
-            <th>Drop / Item Breakdown</th>
+            <th>LINE</th><th>FAMILY/ITEM</th><th>PLAN</th><th>ACTUAL</th>
+            <th>VARIANCE</th><th>PRODUCT DROP RECORD</th>
           </tr>
         </thead>
-
-        <tbody>
-          <tr>
-            <td>BREG Assembly</td>
-            <td class="text-center">2288</td>
-            <td class="text-center">1476</td>
-            <td class="text-center">-812</td>
-            <td class="text-center">—</td>
-            <td>DLX: 1476 (Var: -812)</td>
-          </tr>
-
-          <tr>
-            <td>BREG-SEW</td>
-            <td class="text-center">5913</td>
-            <td class="text-center">5793</td>
-            <td class="text-center">-120</td>
-            <td class="text-center">7.96%</td>
-            <td>DLX: 3053/3600 | 552: 90/900</td>
-          </tr>
-
-          <tr>
-            <td>UO-Assem</td>
-            <td class="text-center">3612</td>
-            <td class="text-center">3340</td>
-            <td class="text-center">-272</td>
-            <td class="text-center">6.44%</td>
-            <td>Item completion tracking</td>
-          </tr>
-
-          <tr>
-            <td>HW Assembly</td>
-            <td class="text-center">3417</td>
-            <td class="text-center">3364</td>
-            <td class="text-center">-53</td>
-            <td class="text-center">2.67%</td>
-            <td>—</td>
-          </tr>
-
-          <tr>
-            <td>VOHW SEW</td>
-            <td class="text-center">4520</td>
-            <td class="text-center">4004</td>
-            <td class="text-center">-516</td>
-            <td class="text-center">3.65%</td>
-            <td>Ankle: 252 | Shoulder: 88</td>
-          </tr>
-        </tbody>
+        <tbody id="todayBody"></tbody>
       </table>
     </div>
 
-    <!-- RIGHT COLUMN: TOMORROW'S PLAN -->
-    <div class="card">
-      <h2>Tomorrow's Plan</h2>
+    <div class="right">
+      <div class="section-title" id="tomorrowTitle">PLAN FOR TOMORROW</div>
+      <div id="tomorrowBody"></div>
 
-      <table id="tomorrow-table">
-        <thead>
-          <tr>
-            <th>Department</th>
-            <th class="text-center">Target Plan</th>
-            <th>Family / Item Breakdown</th>
-          </tr>
-        </thead>
+      <div class="defect-box">
+        <div class="defect-line"><span>UO-Assembly Plan</span><span id="uoPlan">0</span></div>
+        <div class="defect-line"><span>HW-Assembly</span><span id="hwDefect">—</span></div>
+        <div class="defect-line"><span>DEFECT %</span><span id="overallDefect">—</span></div>
+      </div>
 
-        <tbody>
-          <tr>
-            <td>BREG Assembly</td>
-            <td class="text-center">5088</td>
-            <td>DLX: 4200, 552: 888</td>
-          </tr>
-
-          <tr>
-            <td>BREG-SEW</td>
-            <td class="text-center">4464</td>
-            <td>DLX: 3600, 552: 900, BOT: 1940</td>
-          </tr>
-
-          <tr>
-            <td>UO & HW / Trim</td>
-            <td class="text-center">2879</td>
-            <td>Trim: 1610, SS: 518, BS: 158, PK: 500, SPOKI: 400</td>
-          </tr>
-
-          <tr>
-            <td>Trim / Sub-Items</td>
-            <td class="text-center">4300</td>
-            <td>Trim: 1200, An: 400, SS: 500, WB: 700</td>
-          </tr>
-        </tbody>
-      </table>
+      <div class="donut-wrap"><canvas id="defectChart"></canvas></div>
+      <div class="status" id="status">Waiting for Excel upload</div>
     </div>
-
   </div>
+</div>
 
-  <script>
-    // Apply green highlight when Variance >= 0
-    function applyConditionalFormatting() {
-      const rows = document.querySelectorAll('#today-table tbody tr');
+<script>
+let varianceChart, defectChart;
 
-      rows.forEach(row => {
-        const varianceCell = row.cells[3];
+function esc(v){
+ return String(v ?? '').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+}
+function toNum(v){
+ if(v===null||v===undefined||v==='') return 0;
+ const n=Number(String(v).replace(/,/g,'').replace(/%/g,''));
+ return Number.isFinite(n)?n:0;
+}
+function variance(plan,actual){
+ return toNum(actual)-toNum(plan);
+}
+function formatNumber(n){
+ return Number(n).toLocaleString('en-US',{maximumFractionDigits:2});
+}
+function displayVariance(v){
+ return (v>0?'+':'')+formatNumber(v);
+}
+function varianceClass(v){ return v>=0?'pos':'neg'; }
 
-        if (varianceCell) {
-          const varianceValue = parseFloat(varianceCell.textContent);
+function readToday(raw){
+ // Row 1 title, row 2 blank, row 3 headers, row 4+ data
+ return raw.slice(3).filter(r=>r && r.some(x=>x!==null&&x!=='')).map(r=>({
+   department:r[0]??'',
+   item:r[1]??'',
+   plan:r[2]??0,
+   actual:r[3]??0,
+   variance:(r[4]!==null&&r[4]!==undefined&&r[4]!=='')?r[4]:variance(r[2],r[3]),
+   defect:r[5]??'',
+   breakdown:r[6]??''
+ }));
+}
+function readTomorrow(raw){
+ return raw.slice(3).filter(r=>r && r.some(x=>x!==null&&x!=='')).map(r=>({
+   department:r[0]??'',
+   plan:r[1]??0,
+   breakdown:r[2]??''
+ }));
+}
 
-          if (!isNaN(varianceValue) && varianceValue >= 0) {
-            row.classList.add('completed');
-          } else {
-            row.classList.remove('completed');
-          }
-        }
-      });
-    }
+function renderToday(rows){
+ const totalPlan=rows.reduce((s,r)=>s+toNum(r.plan),0);
+ const totalActual=rows.reduce((s,r)=>s+toNum(r.actual),0);
+ const totalVar=totalActual-totalPlan;
 
-    applyConditionalFormatting();
+ document.getElementById('totalPlan').textContent=formatNumber(totalPlan);
+ document.getElementById('totalActual').textContent=formatNumber(totalActual);
+ document.getElementById('totalVariance').textContent=displayVariance(totalVar);
 
-    // Excel upload and parsing
-    document.getElementById('excel-file').addEventListener('change', function(e) {
-      const file = e.target.files[0];
-      if (!file) return;
+ const tbody=document.getElementById('todayBody');
+ tbody.innerHTML='';
+ rows.forEach((r,i)=>{
+   const v=toNum(r.variance);
+   const tr=document.createElement('tr');
+   tr.innerHTML=`
+     <td>${esc(r.department)}</td>
+     <td>${esc(r.item)}</td>
+     <td class="center">${formatNumber(toNum(r.plan))}</td>
+     <td class="center">${formatNumber(toNum(r.actual))}</td>
+     <td class="center ${varianceClass(v)}">${displayVariance(v)}</td>
+     <td>${esc(r.breakdown || r.defect || '')}</td>`;
+   tbody.appendChild(tr);
+ });
 
-      const reader = new FileReader();
+ const drops=rows.filter(r=>toNum(r.variance)<0).sort((a,b)=>toNum(a.variance)-toNum(b.variance)).slice(0,3);
+ const dropBody=document.getElementById('dropBody');
+ dropBody.innerHTML=drops.length?drops.map(r=>`<tr><td>${esc(r.item||r.department)}</td><td>${formatNumber(toNum(r.plan))}</td><td>${esc(r.breakdown||'Missed target')}</td></tr>`).join(''):'<tr><td colspan="3">No missed target</td></tr>';
 
-      reader.onload = function(evt) {
-        const data = new Uint8Array(evt.target.result);
-        const workbook = XLSX.read(data, { type: 'array' });
+ renderVarianceChart(rows);
+ renderDefect(rows);
+}
 
-        // Sheet 1: Today's Performance
-        const sheet1Name = workbook.SheetNames[0];
-        const sheet1 = XLSX.utils.sheet_to_json(workbook.Sheets[sheet1Name]);
-        populateTodayTable(sheet1);
+function renderTomorrow(rows){
+ const box=document.getElementById('tomorrowBody');
+ box.innerHTML='';
+ rows.forEach((r,index)=>{
+   const details=String(r.breakdown||'').split(/[|,]/).filter(Boolean);
+   const div=document.createElement('div');
+   div.className='plan-block';
+   div.innerHTML=`
+    <div class="plan-head"><span>${esc(r.department)}</span><span class="center">${index===0?'Total':'Plan'}</span></div>
+    <div class="plan-body ${index===1?'green':''}">
+      ${details.length?details.map(x=>`<div>${esc(x.trim())}</div>`).join(''):'<div>—</div>'}
+    </div>
+    <div class="total-row"><span>Total</span><span>${formatNumber(toNum(r.plan))}</span></div>`;
+   box.appendChild(div);
+ });
+}
 
-        // Sheet 2: Tomorrow's Plan
-        if (workbook.SheetNames.length > 1) {
-          const sheet2Name = workbook.SheetNames[1];
-          const sheet2 = XLSX.utils.sheet_to_json(workbook.Sheets[sheet2Name]);
-          populateTomorrowTable(sheet2);
-        }
+function renderVarianceChart(rows){
+ const labels=rows.map(r=>r.item||r.department);
+ const values=rows.map(r=>toNum(r.variance));
+ if(varianceChart)varianceChart.destroy();
+ varianceChart=new Chart(document.getElementById('varianceChart'),{
+   type:'bar',
+   data:{labels,datasets:[{label:'Variance',data:values,borderWidth:1}]},
+   options:{
+     responsive:true,maintainAspectRatio:false,
+     plugins:{legend:{display:false}},
+     scales:{x:{ticks:{font:{size:10},maxRotation:0,autoSkip:true}},y:{beginAtZero:true}}
+   }
+ });
+}
 
-        applyConditionalFormatting();
-      };
+function renderDefect(rows){
+ const defects=rows.map(r=>toNum(r.defect)).filter(v=>v>0);
+ const avg=defects.length?defects.reduce((a,b)=>a+b,0)/defects.length:0;
+ document.getElementById('overallDefect').textContent=defects.length?avg.toFixed(2)+'%':'—';
 
-      reader.readAsArrayBuffer(file);
-    });
+ const uo=rows.filter(r=>String(r.department).toLowerCase().includes('uo')).reduce((s,r)=>s+toNum(r.plan),0);
+ document.getElementById('uoPlan').textContent=formatNumber(uo);
 
-    function populateTodayTable(data) {
-      const tbody = document.querySelector('#today-table tbody');
-      tbody.innerHTML = '';
+ const hwRows=rows.filter(r=>String(r.department).toLowerCase().includes('hw'));
+ const hw=hwRows.map(r=>toNum(r.defect)).filter(Boolean);
+ document.getElementById('hwDefect').textContent=hw.length?(hw.reduce((a,b)=>a+b,0)/hw.length).toFixed(2)+'%':'—';
 
-      data.forEach(row => {
-        const tr = document.createElement('tr');
+ if(defectChart)defectChart.destroy();
+ const good=Math.max(0,100-avg);
+ defectChart=new Chart(document.getElementById('defectChart'),{
+   type:'doughnut',
+   data:{labels:['Performance','Defect'],datasets:[{data:[good,avg||0.01],borderWidth:1}]},
+   options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'}}}
+ });
+}
 
-        tr.innerHTML = `
-          <td>${row['Department'] || ''}</td>
-          <td class="text-center">${row['Plan'] ?? 0}</td>
-          <td class="text-center">${row['Actual'] ?? 0}</td>
-          <td class="text-center">${row['Variance'] ?? 0}</td>
-          <td class="text-center">${row['Defect %'] || '—'}</td>
-          <td>${row['Breakdown'] || ''}</td>
-        `;
+document.getElementById('excel-file').addEventListener('change',e=>{
+ const file=e.target.files[0];
+ if(!file)return;
+ const reader=new FileReader();
+ reader.onload=evt=>{
+   try{
+     const wb=XLSX.read(new Uint8Array(evt.target.result),{type:'array',raw:false});
+     const todayName=wb.SheetNames.find(n=>n.trim().toLowerCase()==='today performance')||wb.SheetNames[0];
+     const tomorrowName=wb.SheetNames.find(n=>n.trim().toLowerCase()==='tomorrow plan')||wb.SheetNames[1];
+     if(!todayName||!tomorrowName)throw new Error('Expected sheets: Today Performance and Tomorrow Plan');
+     const todayRaw=XLSX.utils.sheet_to_json(wb.Sheets[todayName],{header:1,defval:'',raw:false});
+     const tomorrowRaw=XLSX.utils.sheet_to_json(wb.Sheets[tomorrowName],{header:1,defval:'',raw:false});
+     const rows=readToday(todayRaw);
+     const tomorrow=readTomorrow(tomorrowRaw);
+     if(!rows.length)throw new Error('No data found in Today Performance.');
+     renderToday(rows);
+     renderTomorrow(tomorrow);
+     const title=todayRaw[0]?.[0]||'';
+     const dateMatch=String(title).match(/(\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4})/);
+     if(dateMatch)document.getElementById('dashDate').textContent=dateMatch[1];
+     document.getElementById('tomorrowTitle').textContent='PLAN FOR TOMORROW';
+     document.getElementById('status').textContent='Loaded: '+file.name+' | '+todayName+' + '+tomorrowName;
+   }catch(err){
+     console.error(err);
+     document.getElementById('status').textContent='Import error: '+err.message;
+   }
+ };
+ reader.readAsArrayBuffer(file);
+});
 
-        tbody.appendChild(tr);
-      });
-    }
-
-    function populateTomorrowTable(data) {
-      const tbody = document.querySelector('#tomorrow-table tbody');
-      tbody.innerHTML = '';
-
-      data.forEach(row => {
-        const tr = document.createElement('tr');
-
-        tr.innerHTML = `
-          <td>${row['Department'] || ''}</td>
-          <td class="text-center">${row['Target Plan'] ?? 0}</td>
-          <td>${row['Breakdown'] || ''}</td>
-        `;
-
-        tbody.appendChild(tr);
-      });
-    }
-  </script>
-
+// Demo data visible before upload
+renderToday([
+ {department:'BREG Assembly',item:'DLX',plan:3600,actual:3053,variance:-547,defect:'',breakdown:'Missed target'},
+ {department:'BREG Assembly',item:'552',plan:900,actual:900,variance:0,defect:'',breakdown:''},
+ {department:'BREG-SEW',item:'SS',plan:3600,actual:3053,variance:-547,defect:'',breakdown:'Product was not failure, IFU'},
+ {department:'BREG-SEW',item:'PK',plan:1000,actual:900,variance:-100,defect:'',breakdown:'Product was not failure'},
+ {department:'UO-Assem',item:'Plan',plan:4464,actual:4464,variance:0,defect:'6.44%',breakdown:'DEFECT %'},
+ {department:'HW Assembly',item:'Plunder',plan:3417,actual:3314,variance:-103,defect:'2.67%',breakdown:'DEFECT %'}
+]);
+renderTomorrow([
+ {department:'BREG Assembly',plan:5088,breakdown:'DLX: 4200, 552: 888'},
+ {department:'BREG-SEW',plan:6440,breakdown:'DLX: 3600, 552: 900, BOT: 1940'},
+ {department:'UO-Assem Plan',plan:4464,breakdown:'Trim and assembly production'}
+]);
+</script>
 </body>
 </html>
